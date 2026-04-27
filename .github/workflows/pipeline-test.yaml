@@ -1,5 +1,9 @@
 name: GitHub Actions Demo
 run-name: test-runner
+
+on:
+  workflow_dispatch:
+
 jobs:
   call-workflow:
     uses: org-test-reply-1/platform-workflows/.github/workflows/dotnet_build.yaml@main
