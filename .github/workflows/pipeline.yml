@@ -3,9 +3,6 @@ name: App Pipeline
 on:
   workflow_dispatch:
 
-env:
-  RUNNER: arc-runner-set
-
 jobs:
   # ── 1. Build & Test ────────────────────────────────────────────────────────
   build:
@@ -30,6 +27,3 @@ jobs:
       context: .
       dry-run: true                      # build reale, push saltato
       runner: arc-runner-set
-    secrets:
-      registry-username: unused
-      registry-password: unused
