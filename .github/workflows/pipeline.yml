@@ -9,7 +9,6 @@ jobs:
     name: .NET Build & Test
     uses: org-test-reply-1/platform-workflows/.github/workflows/ci-dotnet.yml@main
     with:
-      dotnet-version: "9.0.x"
       project-path: "."
       run-tests: true
       runner: arc-runner-set
