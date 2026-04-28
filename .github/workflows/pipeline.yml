@@ -3,6 +3,9 @@ name: App Pipeline
 on:
   workflow_dispatch:
 
+env:
+  RUNNER: arc-runner-set
+
 jobs:
   # ── 1. Build & Test ────────────────────────────────────────────────────────
   build:
@@ -12,16 +15,21 @@ jobs:
       dotnet-version: "9.0.x"
       project-path: "."
       run-tests: true
+      runner: arc-runner-set
 
-  # ── 2. Docker        ───────────────────────────────────
+  # ── 2. Docker (solo su push, non su PR) ───────────────────────────────────
   docker:
     name: Docker Build & Push
     needs: build
     if: github.event_name == 'push'
     uses: org-test-reply-1/platform-workflows/.github/workflows/docker-build-push.yml@main
     with:
-      image-name: ${{ github.repository_owner }}/dotnetapp
-      registry: ghcr.io
+      image-name: myorg/dotnetapp        # nome fittizio — non viene pushato
+      registry: docker.io                # Docker Hub pubblico (nessun account necessario in dry-run)
       dockerfile: ./Dockerfile
       context: .
-      dry-run: true
+      dry-run: true                      # build reale, push saltato
+      runner: arc-runner-set
+    secrets:
+      registry-username: unused
+      registry-password: unused
