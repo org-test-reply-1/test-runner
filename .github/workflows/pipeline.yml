@@ -9,7 +9,7 @@ jobs:
     name: .NET Build & Test
     uses: org-test-reply-1/platform-workflows/.github/workflows/ci-dotnet.yml@main
     with:
-      project-path: "dotnetapp"
+      project-path: "samples/dotnetapp"
       run-tests: true
       runner: arc-runner-set
 
@@ -22,7 +22,7 @@ jobs:
     with:
       image-name: myorg/dotnetapp        # nome fittizio — non viene pushato
       registry: docker.io                # Docker Hub pubblico (nessun account necessario in dry-run)
-      dockerfile: ./Dockerfile
-      context: .
+      dockerfile: samples/dotnetapp/Dockerfile
+      context: samples/dotnetapp
       dry-run: true                      # build reale, push saltato
       runner: arc-runner-set
