@@ -12,17 +12,3 @@ jobs:
       project-path: "samples/dotnetapp"
       run-tests: true
       runner: arc-runner-set
-
-  # ── 2. Docker (solo su push, non su PR) ───────────────────────────────────
-  docker:
-    name: Docker Build & Push
-    needs: build
-    if: github.event_name == 'push'
-    uses: org-test-reply-1/platform-workflows/.github/workflows/docker-build-push.yml@main
-    with:
-      image-name: myorg/dotnetapp        # nome fittizio — non viene pushato
-      registry: docker.io                # Docker Hub pubblico (nessun account necessario in dry-run)
-      dockerfile: samples/dotnetapp/Dockerfile
-      context: samples/dotnetapp
-      dry-run: true                      # build reale, push saltato
-      runner: arc-runner-set
