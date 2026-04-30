@@ -68,12 +68,16 @@ if (OperatingSystem.IsLinux()
     WriteLine($"GC Hard limit %: {(double)totalMemoryBytes / memoryLimit * 100:N0}");
 }
 
+
 static string GetInBestUnit(long size) => size switch
 {
     < (long)Mebi => $"{size} bytes",
     < (long)Gibi => $"{size / Mebi:F} MiB",
     _ => $"{size / Gibi:F} GiB"
 };
+
+// Nuova funzionalità: restituisce la data e ora di esecuzione del programma
+public static string GetRunTimestamp() => $"Run timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
 
 static bool TryReadFirstLongFromPaths(string[] paths, out long limit, [NotNullWhen(true)] out string? bestPath)
 {
@@ -90,3 +94,6 @@ static bool TryReadFirstLongFromPaths(string[] paths, out long limit, [NotNullWh
     limit = 0;
     return false;
 }
+
+// Utilizzo della nuova funzionalità
+WriteLine(GetRunTimestamp());
