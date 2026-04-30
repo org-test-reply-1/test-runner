@@ -77,7 +77,7 @@ static string GetInBestUnit(long size) => size switch
 };
 
 // Nuova funzionalità: restituisce la data e ora di esecuzione del programma
-public static string GetRunTimestamp() => $"Run timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+static string GetRunTimestamp() => $"Run timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
 
 static bool TryReadFirstLongFromPaths(string[] paths, out long limit, [NotNullWhen(true)] out string? bestPath)
 {
