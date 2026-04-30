@@ -7,3 +7,4 @@ on:
 jobs:
   call-workflow:
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@main
+    secrets: inherit
