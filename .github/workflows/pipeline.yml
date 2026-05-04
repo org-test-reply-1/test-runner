@@ -14,4 +14,4 @@ jobs:
     with:
       project-path: "samples/dotnetapp"
       run-tests: true
-      runner: arc-runner-set
+      runner: ubuntu-latest #arc-runner-set
