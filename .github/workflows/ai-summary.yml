@@ -1,0 +1,12 @@
+name: Daily Changes Summary
+
+on:
+  schedule:
+    - cron: '30 17 * * 1-5'   # Lun-Ven alle 17:30 UTC
+  workflow_dispatch:
+
+jobs:
+  summary:
+    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-daily-summary.yml@main
+    secrets:
+      COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
