@@ -29,11 +29,33 @@ permissions:
 
 jobs:
   # ========================================================
+  # Prerequisite check — verify COPILOT_ASSIGN_PAT is set
+  # ========================================================
+  check-prerequisites:
+    name: Check Prerequisites
+    runs-on: ubuntu-latest
+    outputs:
+      has-pat: ${{ steps.check-pat.outputs.has-pat }}
+    steps:
+      - name: Check COPILOT_ASSIGN_PAT
+        id: check-pat
+        env:
+          COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
+        run: |
+          if [ -n "$COPILOT_ASSIGN_PAT" ]; then
+            echo "has-pat=true" >> $GITHUB_OUTPUT
+          else
+            echo "::warning::COPILOT_ASSIGN_PAT secret is not set — AI Security Scan will be skipped."
+            echo "has-pat=false" >> $GITHUB_OUTPUT
+          fi
+
+  # ========================================================
   # AI Security Scan — Crea issue e assegna al Coding Agent
   # ========================================================
   ai-security-scan:
     name: AI Security Scan
-    if: inputs.enable-ai-scan != false || github.event_name != 'workflow_dispatch'
+    needs: [check-prerequisites]
+    if: needs.check-prerequisites.outputs.has-pat == 'true' && (inputs.enable-ai-scan != false || github.event_name != 'workflow_dispatch')
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-security-scan.yml@main
     with:
       scan-paths: '.'
