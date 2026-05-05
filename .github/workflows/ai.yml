@@ -6,6 +6,10 @@ on:
     - cron: '0 */2 * * *' 
   workflow_dispatch:
 
+permissions:
+  contents: read
+  actions: read
+
 jobs:
   call-workflow:
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@main
