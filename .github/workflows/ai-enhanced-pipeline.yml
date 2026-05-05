@@ -31,6 +31,8 @@ jobs:
   # ========================================================
   # AI Security Scan
   # ========================================================
+  # NOTE: For full Copilot functionality, configure COPILOT_GITHUB_TOKEN
+  # secret in repository settings. Falls back to GITHUB_TOKEN if not set.
   ai-security-scan:
     name: AI Security Scan
     if: inputs.enable-ai-scan != false || github.event_name != 'workflow_dispatch'
