@@ -1,0 +1,84 @@
+name: AI-Enhanced CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      enable-ai-scan:
+        description: 'Enable AI Security Scan'
+        type: boolean
+        default: true
+      fail-on-critical:
+        description: 'Fail build on critical vulnerabilities'
+        type: boolean
+        default: false
+      environment:
+        description: 'Deployment environment'
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+        default: dev
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  # ========================================================
+  # JOB 1: CI Build & Test
+  # ========================================================
+  ci-build:
+    name: CI Build & Test
+    uses: org-test-reply-1/platform-workflows/.github/workflows/ci-dotnet.yml@main
+    with:
+      project-path: "."
+      run-tests: true
+      runner: ubuntu-latest
+
+  # ========================================================
+  # JOB 2: AI Security Scan
+  # ========================================================
+  ai-security-scan:
+    name: AI Security Scan
+    needs: ci-build
+    if: ${{ inputs.enable-ai-scan != false }}
+    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-security-scan.yml@v1
+    with:
+      scan-paths: '.'
+      fail-on-critical: ${{ inputs.fail-on-critical || false }}
+    secrets:
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  # ========================================================
+  # JOB 3: Deploy to Environment
+  # ========================================================
+  deploy:
+    name: Deploy to ${{ inputs.environment || 'dev' }}
+    needs: [ci-build, ai-security-scan]
+    if: always() && needs.ci-build.result == 'success' && (needs.ai-security-scan.result == 'success' || needs.ai-security-scan.result == 'skipped')
+    uses: org-test-reply-1/platform-workflows/.github/workflows/deploy-arc.yml@main
+    with:
+      image_full_tag: "ghcr.io/org-test-reply-1/test-runner:${{ github.sha }}"
+      arc_runner_set_name: "test-runner-${{ inputs.environment || 'dev' }}"
+      arc_namespace: "arc-runners"
+      arc_system_namespace: "arc-system"
+      github_config_url: "https://github.com/org-test-reply-1"
+      values_yaml_path: "./arc-runner-image/values.yaml"
+      use_pat: false
+      use_github_app: true
+    secrets:
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
+      AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
+      ARC_GITHUB_APP_ID: ${{ secrets.ARC_GITHUB_APP_ID }}
+      ARC_GITHUB_APP_INSTALLATION_ID: ${{ secrets.ARC_GITHUB_APP_INSTALLATION_ID }}
+      ARC_GITHUB_APP_PRIVATE_KEY: ${{ secrets.ARC_GITHUB_APP_PRIVATE_KEY }}
