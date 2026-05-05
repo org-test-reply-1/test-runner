@@ -42,9 +42,4 @@ jobs:
     with:
       scan-paths: '.'
       fail-on-critical: ${{ inputs.fail-on-critical || false }}
-    permissions:
-      contents: read
-      id-token: write
-      actions: read
-      security-events: write
     secrets: inherit
