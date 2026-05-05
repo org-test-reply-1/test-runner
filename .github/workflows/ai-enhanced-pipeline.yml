@@ -25,16 +25,13 @@ on:
 
 permissions:
   contents: read
-  id-token: write
+  issues: write
   actions: read
-  security-events: write
 
 jobs:
   # ========================================================
-  # AI Security Scan
+  # AI Security Scan — Crea issue e assegna al Coding Agent
   # ========================================================
-  # NOTE: For full Copilot functionality, configure COPILOT_GITHUB_TOKEN
-  # secret in repository settings. Falls back to GITHUB_TOKEN if not set.
   ai-security-scan:
     name: AI Security Scan
     if: inputs.enable-ai-scan != false || github.event_name != 'workflow_dispatch'
@@ -44,7 +41,7 @@ jobs:
       fail-on-critical: ${{ inputs.fail-on-critical || false }}
     permissions:
       contents: read
-      id-token: write
+      issues: write
       actions: read
-      security-events: write
-    secrets: inherit
+    secrets:
+      COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
