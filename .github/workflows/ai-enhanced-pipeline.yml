@@ -1,6 +1,12 @@
 name: AI-Enhanced CI/CD Pipeline
 
 on:
+  push:
+    branches:
+      - main
+  # pull_request triggers are intentionally disabled to prevent an infinite
+  # loop: copilot PRs → security scan → new issue → new copilot PR → repeat.
+  # The scan runs on push to main (post-merge) and on manual dispatch.
   workflow_dispatch:
     inputs:
       enable-ai-scan:
@@ -15,12 +21,6 @@ on:
         description: 'Paths to scan (comma-separated)'
         type: string
         default: '.'
-  # push:
-  #   branches:
-  #     - main
-  # pull_request:
-  #   branches:
-  #     - main
 
 permissions:
   contents: read
@@ -33,7 +33,9 @@ jobs:
   # ========================================================
   ai-security-scan:
     name: AI Security Scan
-    if: inputs.enable-ai-scan != false || github.event_name != 'workflow_dispatch'
+    # For workflow_dispatch: respect the enable-ai-scan input.
+    # For push to main: always run the scan.
+    if: github.event_name != 'workflow_dispatch' || inputs.enable-ai-scan != false
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-security-scan.yml@main
     with:
       scan-paths: '.'
