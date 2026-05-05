@@ -26,6 +26,8 @@ on:
 permissions:
   contents: read
   id-token: write
+  actions: read
+  security-events: write
 
 jobs:
   # ========================================================
@@ -38,7 +40,11 @@ jobs:
     if: inputs.enable-ai-scan != false || github.event_name != 'workflow_dispatch'
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-security-scan.yml@main
     with:
-      scan-paths: ${{ inputs.scan-paths || '.' }}
+      scan-paths: '.'
       fail-on-critical: ${{ inputs.fail-on-critical || false }}
-    secrets:
-      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+      security-events: write
+    secrets: inherit
