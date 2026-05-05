@@ -30,10 +30,37 @@ permissions:
 
 jobs:
   # ========================================================
+  # Setup Labels — Assicura che le label necessarie esistano
+  # ========================================================
+  setup-labels:
+    name: Setup Labels
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Create required labels
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_ASSIGN_PAT || github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          create_label_if_missing() {
+            local name="$1"
+            local color="$2"
+            local description="$3"
+            gh label create "$name" --color "$color" --description "$description" --repo "$REPO" 2>/dev/null || \
+            gh label edit "$name" --color "$color" --description "$description" --repo "$REPO" 2>/dev/null || \
+            echo "Label '$name' already exists or could not be created"
+          }
+          create_label_if_missing "copilot-auto"   "0075ca" "Automatically managed by Copilot"
+          create_label_if_missing "security"        "e4e669" "Security related issue"
+          create_label_if_missing "code-quality"    "bfd4f2" "Code quality improvement"
+
+  # ========================================================
   # AI Security Scan — Crea issue e assegna al Coding Agent
   # ========================================================
   ai-security-scan:
     name: AI Security Scan
+    needs: setup-labels
     if: inputs.enable-ai-scan != false || github.event_name != 'workflow_dispatch'
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-security-scan.yml@main
     with:
