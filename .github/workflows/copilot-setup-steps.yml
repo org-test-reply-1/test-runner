@@ -20,14 +20,23 @@ jobs:
       #   run: mvn dependency:resolve --batch-mode
 
       # ── Node.js ──
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      # - name: Setup Node.js
+      #   uses: actions/setup-node@v4
+      #   with:
+      #     node-version: '20'
+      #     cache: 'npm'
+      #
+      # - name: Install dependencies
+      #   run: npm ci
+
+      # ── .NET ──
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          node-version: '20'
-          cache: 'npm'
-      
-      - name: Install dependencies
-        run: npm ci
+          dotnet-version: '9.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore
 
       # ── Python ──
       # - name: Setup Python
