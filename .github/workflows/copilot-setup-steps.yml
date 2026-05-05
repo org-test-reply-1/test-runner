@@ -1,0 +1,59 @@
+name: "Copilot Setup Steps"
+
+# Automatically run the setup steps when they are changed to allow for easy validation, and
+# allow manual testing through the repository's "Actions" tab
+on:
+    workflow_dispatch:
+    push:
+        paths:
+            - .github/workflows/copilot-setup-steps.yml
+    pull_request:
+        paths:
+            - .github/workflows/copilot-setup-steps.yml
+
+jobs:
+    # The job MUST be called `copilot-setup-steps` or it will not be picked up by Copilot.
+    copilot-setup-steps:
+        runs-on: ubuntu-latest
+
+        permissions:
+            contents: read
+
+        steps:
+            - uses: actions/checkout@v4
+
+            # ── Java / Maven ──
+            # - name: Setup Java
+            #   uses: actions/setup-java@v4
+            #   with:
+            #     java-version: '17'
+            #     distribution: 'temurin'
+            #     cache: 'maven'
+            #
+            # - name: Resolve Maven dependencies
+            #   run: mvn dependency:resolve --batch-mode
+
+            # ── Node.js ──
+            # Commented out: this is a .NET project and has no package-lock.json.
+            # actions/setup-node@v4 with cache: 'npm' requires a lock file and will fail without one.
+            # - name: Setup Node.js
+            #   uses: actions/setup-node@v4
+            #   with:
+            #     node-version: '20'
+            #     cache: 'npm'
+            #
+            # - name: Install dependencies
+            #   run: npm ci
+
+            # ── Python ──
+            # - name: Setup Python
+            #   uses: actions/setup-python@v5
+            #   with:
+            #     python-version: '3.11'
+            #     cache: 'pip'
+            #
+            # - name: Install dependencies
+            #   run: pip install -r requirements.txt
+
+            - name: Setup completato
+              run: echo "Ambiente Coding Agent pronto"
