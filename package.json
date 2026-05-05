@@ -1,0 +1,10 @@
+{
+  "name": "test-runner",
+  "version": "1.0.0",
+  "description": "Minimal package.json to support npm caching in GitHub Actions (Copilot cloud agent) workflow",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/org-test-reply-1/test-runner.git"
+  }
+}
