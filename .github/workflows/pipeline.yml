@@ -18,3 +18,25 @@ jobs:
       project-path: "samples/dotnetapp"
       run-tests: true
       runner: arc-runner-set
+
+# ── 2. Se fallisce → triggera failure handler immediatamente ───────────────
+  on-failure:
+    name: Trigger Failure Handler
+    needs: build
+    if: failure()
+    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@main
+    secrets:
+      COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
+      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
+
+  # ── 3. Se passa → triggera security scan ──────────────────────────────────
+  on-success:
+    name: Trigger Security Scan
+    needs: build
+    if: success()
+    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-security-scan.yml@main
+    with:
+      scan-paths: '.'
+      fail-on-critical: false
+    secrets:
+      COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
