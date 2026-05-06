@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   # ── 1. Build & Test ────────────────────────────────────────────────────────
