@@ -76,24 +76,7 @@ static string GetInBestUnit(long size) => size switch
     _ => $"{size / Gibi:F} GiB"
 };
 
-// Nuova funzionalità: restituisce la data e ora di esecuzione del programma
-static string GetRunTimestamp() => $"Run timestamp: {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
 
-static bool TryReadFirstLongFromPaths(string[] paths, out long limit, [NotNullWhen(true)] out string? bestPath)
-{
-    foreach (string path in paths)
-    {
-        if (File.Exists(path) && long.TryParse(File.ReadAllText(path), out limit))
-        {
-            bestPath = path;
-            return true;
-        }
-    }
-
-    bestPath = null;
-    limit = 0;
-    return false;
-}
 
 // Utilizzo della nuova funzionalità
 WriteLine(GetRunTimestamp());
