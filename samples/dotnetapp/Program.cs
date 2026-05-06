@@ -76,8 +76,28 @@ static string GetInBestUnit(long size) => size switch
     _ => $"{size / Gibi:F} GiB"
 };
 
+static bool TryReadFirstLongFromPaths(string[] paths, out long value, [NotNullWhen(true)] out string? foundPath)
+{
+    foreach (string path in paths)
+    {
+        if (File.Exists(path))
+        {
+            string content = File.ReadAllText(path).Trim();
+            if (long.TryParse(content, out value))
+            {
+                foundPath = path;
+                return true;
+            }
+        }
+    }
 
+    value = 0;
+    foundPath = null;
+    return false;
+}
 
-// Utilizzo della nuova funzionalità
+static string GetRunTimestamp() => $"Run timestamp: {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC";
+
+// Print run timestamp
 WriteLine(GetRunTimestamp());
 
