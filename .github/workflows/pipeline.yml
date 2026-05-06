@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - '.github/workflows/**'
+      - '*.md'
+      - 'README*'
   workflow_dispatch:
 
 permissions:
