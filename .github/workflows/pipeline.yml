@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   actions: read
   issues: write
 
@@ -39,6 +39,6 @@ jobs:
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-security-scan.yml@main
     with:
       scan-paths: '.'
-      fail-on-critical: false
+      fail-on-critical: true
     secrets:
       COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}

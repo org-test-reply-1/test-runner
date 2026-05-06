@@ -9,4 +9,6 @@ on:
 jobs:
   call-workflow:
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@main
-    secrets: inherit
+    secrets:
+      COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
+      TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}

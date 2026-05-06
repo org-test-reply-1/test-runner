@@ -5,6 +5,11 @@ on:
     - cron: '30 17 * * 1-5'   # Lun-Ven alle 17:30 UTC
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+
 jobs:
   summary:
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-daily-summary.yml@main
