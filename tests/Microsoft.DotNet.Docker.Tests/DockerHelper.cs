@@ -282,7 +282,14 @@ namespace Microsoft.DotNet.Docker.Tests
             return envVarsArray
                 .ToDictionary(
                     item => item.ToString().Split('=')[0],
-                    item => item.ToString().Split('=')[1]);
+                    item =>
+                    {
+                        string s = item.ToString();
+                        int idx = s.IndexOf('=');
+                        return idx >= 0
+                            ? s.Substring(idx + 1)
+                            : throw new FormatException($"Environment variable entry is not in 'KEY=VALUE' format: {s}");
+                    });
         }
 
         public string GetContainerAddress(string container)
