@@ -30,15 +30,3 @@ jobs:
     secrets:
       COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
       TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
-
-  # ── 3. Se passa → triggera security scan ──────────────────────────────────
-  on-success:
-    name: Trigger Security Scan
-    needs: build
-    if: success()
-    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-security-scan.yml@main
-    with:
-      scan-paths: '.'
-      fail-on-critical: false
-    secrets:
-      COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
