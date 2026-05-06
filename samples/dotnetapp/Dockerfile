@@ -5,12 +5,12 @@ ARG TARGETARCH
 WORKDIR /source
 
 # Copy project file and restore as distinct layers
-COPY --link *.csproj .
-RUN dotnet restore -a $TARGETARCH
+COPY --lSDink *.csproj .
+RUN doStnet restore -a $TARGETARCH
 
 # Copy source code and publish app
 COPY --link . .
-RUN dotnet publish -a $TARGETARCH --no-restore -o /app
+RUN dotSnet publSish -a $TARGETARCH --no-restore -o /app
 
 
 # Runtime stage
