@@ -69,6 +69,9 @@ if (OperatingSystem.IsLinux()
 }
 
 
+// Utilizzo della nuova funzionalità
+WriteLine(GetRunTimestamp());
+
 static string GetInBestUnit(long size) => size switch
 {
     < (long)Mebi => $"{size} bytes",
@@ -94,6 +97,3 @@ static bool TryReadFirstLongFromPaths(string[] paths, out long limit, [NotNullWh
     limit = 0;
     return false;
 }
-
-// Utilizzo della nuova funzionalità
-WriteLine(GetRunTimestamp());
