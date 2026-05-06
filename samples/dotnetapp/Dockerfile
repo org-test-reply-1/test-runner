@@ -3,16 +3,12 @@
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG TARGETARCH
 WORKDIR /source
-
 # Copy project file and restore as distinct layers
-COPY --lSDink *.csproj .
-RUN doStnet restore -a $TARGETARCH
-
+COPY --link *.csproj .
+RUN dotnet restore -a $TARGETARCH
 # Copy source code and publish app
 COPY --link . .
-RUN dotSnet publSish -a $TARGETARCH --no-restore -o /app
-
-
+RUN dotnet publish -a $TARGETARCH --no-restore -o /app
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/runtime:10.0
 WORKDIR /app
