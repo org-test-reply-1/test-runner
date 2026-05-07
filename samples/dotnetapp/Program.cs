@@ -99,4 +99,3 @@ static bool TryReadFirstLongFromPaths(string[] paths, out long limit, [NotNullWh
 WriteLine(GetRunTimestamp());
 
 
-          ERRORE TESTING
