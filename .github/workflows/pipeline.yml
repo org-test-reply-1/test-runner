@@ -11,7 +11,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   actions: read
   issues: write
 
@@ -19,7 +19,7 @@ jobs:
   # ── 1. Build & Test ────────────────────────────────────────────────────────
   build:
     name: .NET Build & Test
-    uses: org-test-reply-1/platform-workflows/.github/workflows/ci-dotnet.yml@main
+    uses: org-test-reply-1/platform-workflows/.github/workflows/ci-dotnet.yml@9f65298a0ce18a5032d6f9f5a33c6d5514bd30a5
     with:
       project-path: "samples/dotnetapp"
       run-tests: true
@@ -30,7 +30,7 @@ jobs:
     name: Trigger Failure Handler
     needs: build
     if: failure()
-    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@main
+    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@bfaa4b61588fbec03b885a2fbf4940537c590658
     secrets:
       COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
       TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
