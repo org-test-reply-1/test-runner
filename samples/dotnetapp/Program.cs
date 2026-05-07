@@ -68,6 +68,8 @@ if (OperatingSystem.IsLinux()
     WriteLine($"GC Hard limit %: {(double)totalMemoryBytes / memoryLimit * 100:N0}");
 }
 
+// Utilizzo della nuova funzionalità
+WriteLine(GetRunTimestamp());
 
 static string GetInBestUnit(long size) => size switch
 {
@@ -94,8 +96,4 @@ static bool TryReadFirstLongFromPaths(string[] paths, out long limit, [NotNullWh
     limit = 0;
     return false;
 }
-
-// Utilizzo della nuova funzionalità
-WriteLine(GetRunTimestamp());
-
 
