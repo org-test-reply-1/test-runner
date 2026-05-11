@@ -280,9 +280,11 @@ namespace Microsoft.DotNet.Docker.Tests
             string envVarsStr = ExecuteWithLogging($"inspect -f \"{{{{json .Config.Env }}}}\" {image}");
             JArray envVarsArray = (JArray)JsonConvert.DeserializeObject(envVarsStr);
             return envVarsArray
+                .Select(item => item.ToString().Split('=', 2))
+                .Where(parts => parts.Length == 2)
                 .ToDictionary(
-                    item => item.ToString().Split('=')[0],
-                    item => item.ToString().Split('=')[1]);
+                    parts => parts[0],
+                    parts => parts[1]);
         }
 
         public string GetContainerAddress(string container)

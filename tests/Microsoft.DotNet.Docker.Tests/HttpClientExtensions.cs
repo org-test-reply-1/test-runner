@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Docker.Tests
         public static async Task DownloadFileAsync(this HttpClient client, Uri uri, string path)
         {
             using Stream stream = await client.GetStreamAsync(uri);
-            using FileStream fileStream = new(path, FileMode.OpenOrCreate);
+            using FileStream fileStream = new(path, FileMode.Create);
             await stream.CopyToAsync(fileStream);
         }
     }
