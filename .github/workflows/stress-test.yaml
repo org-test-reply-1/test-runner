@@ -21,7 +21,7 @@ jobs:
             while true; do
               sha256sum /dev/zero
             done
-          '
+          ' || [ $? -eq 124 ]
 
   react_load:
     strategy:
@@ -40,4 +40,4 @@ jobs:
             while true; do
               sha256sum /dev/zero
             done
-          '
+          ' || [ $? -eq 124 ]
