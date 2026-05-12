@@ -4,40 +4,59 @@ on:
   workflow_dispatch:
 
 jobs:
-  dotnet_load:
+  stress_load:
     strategy:
       fail-fast: false
       max-parallel: 20
       matrix:
-        worker: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+        include:
+          - worker: 1
+            runner: arc-runner-dotnet
+          - worker: 2
+            runner: arc-runner-react
+          - worker: 3
+            runner: arc-runner-dotnet
+          - worker: 4
+            runner: arc-runner-react
+          - worker: 5
+            runner: arc-runner-dotnet
+          - worker: 6
+            runner: arc-runner-react
+          - worker: 7
+            runner: arc-runner-dotnet
+          - worker: 8
+            runner: arc-runner-react
+          - worker: 9
+            runner: arc-runner-dotnet
+          - worker: 10
+            runner: arc-runner-react
+          - worker: 11
+            runner: arc-runner-dotnet
+          - worker: 12
+            runner: arc-runner-react
+          - worker: 13
+            runner: arc-runner-dotnet
+          - worker: 14
+            runner: arc-runner-react
+          - worker: 15
+            runner: arc-runner-dotnet
+          - worker: 16
+            runner: arc-runner-react
+          - worker: 17
+            runner: arc-runner-dotnet
+          - worker: 18
+            runner: arc-runner-react
+          - worker: 19
+            runner: arc-runner-dotnet
+          - worker: 20
+            runner: arc-runner-react
 
-    runs-on: arc-runner-dotnet
+    runs-on: ${{ matrix.runner }}
 
     steps:
-      - name: CPU stress (.NET runner)
+      - name: CPU stress (worker ${{ matrix.worker }})
         run: |
-          echo "Runner $(hostname)"
-          timeout 300s bash -c '
-            while true; do
-              sha256sum /dev/zero
-            done
-          '
-
-  react_load:
-    strategy:
-      fail-fast: false
-      max-parallel: 20
-      matrix:
-        worker: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-
-    runs-on: arc-runner-react
-
-    steps:
-      - name: CPU stress (React runner)
-        run: |
-          echo "Runner $(hostname)"
-          timeout 300s bash -c '
-            while true; do
-              sha256sum /dev/zero
-            done
-          '
+          echo "Worker ${{ matrix.worker }} on runner $(hostname)"
+          for i in {1..30}; do
+            dd if=/dev/zero bs=10M count=10 2>/dev/null | sha256sum >/dev/null
+          done
