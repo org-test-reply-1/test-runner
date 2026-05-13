@@ -7,6 +7,7 @@ on:
 
 jobs:
   summary:
+    permissions: {}
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-daily-summary.yml@a87037605c174207eab693e2a868d5b7712a63bb
     secrets:
       COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
