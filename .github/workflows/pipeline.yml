@@ -11,15 +11,14 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   actions: read
-  issues: write
 
 jobs:
   # ── 1. Build & Test ────────────────────────────────────────────────────────
   build:
     name: .NET Build & Test
-    uses: org-test-reply-1/platform-workflows/.github/workflows/ci-dotnet.yml@main
+    uses: org-test-reply-1/platform-workflows/.github/workflows/ci-dotnet.yml@fb5f08ef77d9680d62ac7d2a2a8020ce325ebec4
     with:
       project-path: "samples/dotnetapp"
       run-tests: true
@@ -30,7 +29,10 @@ jobs:
     name: Trigger Failure Handler
     needs: build
     if: failure()
-    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@main
+    uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@a87037605c174207eab693e2a868d5b7712a63bb
+    permissions:
+      contents: read
+      issues: write
     with:
       target-repo: ${{ github.repository }}
     secrets:
