@@ -97,6 +97,3 @@ static bool TryReadFirstLongFromPaths(string[] paths, out long limit, [NotNullWh
 
 // Utilizzo della nuova funzionalità
 WriteLine(GetRunTimestamp());
-
-
-ERRORE 
