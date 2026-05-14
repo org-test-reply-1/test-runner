@@ -1,5 +1,4 @@
 name: App Pipeline
-
 on:
   push:
     branches:
@@ -9,14 +8,11 @@ on:
       - '*.md'
       - 'README*'
   workflow_dispatch:
-
 permissions:
   contents: write
   actions: read
   issues: write
-
 jobs:
-  # ── 1. Build & Test ────────────────────────────────────────────────────────
   build:
     name: .NET Build & Test
     uses: org-test-reply-1/platform-workflows/.github/workflows/ci-dotnet.yml@main
@@ -24,8 +20,6 @@ jobs:
       project-path: "samples/dotnetapp"
       run-tests: true
       runner: arc-runner-set
-
-# ── 2. Se fallisce → triggera failure handler immediatamente ───────────────
   on-failure:
     name: Trigger Failure Handler
     needs: build
@@ -33,6 +27,7 @@ jobs:
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@main
     with:
       target-repo: ${{ github.repository }}
+      failed-run-id: ${{ github.run_id }}
     secrets:
       COPILOT_ASSIGN_PAT: ${{ secrets.COPILOT_ASSIGN_PAT }}
       TEAMS_WEBHOOK_URL: ${{ secrets.TEAMS_WEBHOOK_URL }}
