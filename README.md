@@ -1,5 +1,10 @@
-# test-runner
+# Test Runner
 
+GitHub Enterprise Organization Structure
+
+## Repository Organization
+
+```
 GitHub Enterprise Organization
 │
 ├── platform-workflows/          ← Team Platform (template CI/CD riutilizzabili)
@@ -69,3 +74,39 @@ GitHub Enterprise Organization
 │           └── ai.yml
 │
 └── ...
+```
+
+## Key Components
+
+### Platform Workflows
+Reusable GitHub Actions workflows for common CI/CD patterns:
+- **.NET builds** - ci-dotnet.yml
+- **React Vite builds** - ci-react-vite.yml
+- **Docker operations** - docker-build-push.yml
+- **ARC deployments** - deploy-arc.yml
+- **Tagging** - tag.yml
+
+### Platform Actions
+Composite reusable actions for modular pipeline steps:
+- Copilot CLI setup and agent execution
+- Kubernetes namespace creation
+- ARC controller and cluster deployments
+- Docker build and push operations
+- Microsoft Teams notifications
+- React Vite build automation
+- Repository tagging
+
+### Platform AI Workflows
+AI-enhanced pipeline workflows:
+- Daily summary generation
+- Failure analysis and handling
+- Pull request notifications
+- Security scanning
+
+### Platform Pipeline
+Infrastructure-specific pipelines and ARC runner configurations for:
+- .NET applications
+- Node.js applications
+
+### Application Pipelines
+Individual application pipelines (test-runner, storefront-app) that reference centralized reusable workflows.
