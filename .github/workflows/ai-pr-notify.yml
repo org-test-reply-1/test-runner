@@ -4,6 +4,9 @@ on:
   pull_request:
     types: [opened]
 
+permissions:
+  contents: read
+
 jobs:
   notify:
     if: contains(github.event.pull_request.user.login, 'copilot')

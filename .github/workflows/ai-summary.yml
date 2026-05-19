@@ -5,6 +5,9 @@ on:
     - cron: '30 15 * * 1-5'   
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   summary:
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-daily-summary.yml@main
