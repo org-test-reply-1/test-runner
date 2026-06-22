@@ -1,0 +1,271 @@
+# ============================================================================
+#  PIPELINE DIMOSTRATIVA — CI/CD .NET con GitHub Actions
+# ----------------------------------------------------------------------------
+#  Esempio completo e auto-contenuto (no reusable workflow, no composite action)
+#  pensato per mostrare le funzionalita' principali di GitHub Actions:
+#    - trigger multipli (push / PR / manuale / schedulato)
+#    - input manuali e variabili d'ambiente
+#    - concurrency (annulla run obsolete)
+#    - permessi minimi (security)
+#    - matrix build (piu' OS / piu' versioni in parallelo)
+#    - cache delle dipendenze
+#    - job dipendenti (needs) e passaggio di output tra job
+#    - condizioni (if), artifact, test report
+#    - environment con approvazione manuale per il deploy
+#    - job summary nella UI di GitHub
+# ============================================================================
+
+name: CI/CD .NET (Demo Cliente)
+
+# ---------------------------------------------------------------------------
+# 1) TRIGGER — quando parte la pipeline
+# ---------------------------------------------------------------------------
+on:
+  push:
+    branches: [main, develop]
+    tags: ["v*"]            # parte anche sui tag versione (es. v1.2.0)
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 6 * * 1"     # ogni lunedi' alle 06:00 UTC (build di controllo)
+  workflow_dispatch:        # bottone "Run workflow" nella UI
+    inputs:
+      project-path:
+        description: "Path al .csproj o alla solution"
+        type: string
+        default: "."
+      run-tests:
+        description: "Eseguire i test?"
+        type: boolean
+        default: true
+      deploy-env:
+        description: "Ambiente di deploy"
+        type: choice
+        options: [none, staging, production]
+        default: none
+
+# ---------------------------------------------------------------------------
+# 2) CONCURRENCY — una run alla volta per branch, le vecchie vengono annullate
+# ---------------------------------------------------------------------------
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# ---------------------------------------------------------------------------
+# 3) PERMESSI — principio del minimo privilegio per il GITHUB_TOKEN
+# ---------------------------------------------------------------------------
+permissions:
+  contents: write           # serve per creare/pushare i tag
+  checks: write             # serve per pubblicare il report dei test
+  pull-requests: write      # serve per commentare le PR
+
+# ---------------------------------------------------------------------------
+# 4) VARIABILI D'AMBIENTE GLOBALI (valide per tutti i job)
+# ---------------------------------------------------------------------------
+env:
+  DOTNET_VERSION: "10.0"
+  PUBLISH_OUTPUT: "./publish"
+  PROJECT_PATH: ${{ inputs.project-path || '.' }}
+  DOTNET_NOLOGO: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: true
+
+jobs:
+
+  # =========================================================================
+  # JOB 1 — BUILD & TEST (matrix: piu' OS in parallelo)
+  # =========================================================================
+  build:
+    name: Build & Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false       # se un OS fallisce, gli altri continuano
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    outputs:
+      version: ${{ steps.version.outputs.version }}   # output passato ai job successivi
+
+    steps:
+      - name: Checkout codice
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0     # storia completa (serve per versioning/tag)
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      # Cache dei pacchetti NuGet: velocizza le build successive
+      - name: Cache NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/packages.lock.json') }}
+          restore-keys: ${{ runner.os }}-nuget-
+
+      - name: Restore dipendenze
+        run: dotnet restore ${{ env.PROJECT_PATH }}
+
+      - name: Build (Release)
+        run: dotnet build ${{ env.PROJECT_PATH }} --no-restore --configuration Release
+
+      - name: Test + coverage
+        if: ${{ inputs.run-tests != false }}
+        run: >
+          dotnet test ${{ env.PROJECT_PATH }}
+          --no-build --configuration Release
+          --logger trx --results-directory ./test-results
+          --collect:"XPlat Code Coverage"
+
+      # Pubblica il report dei test visibile nella tab "Checks" della PR
+      - name: Pubblica report test
+        if: ${{ always() && inputs.run-tests != false }}
+        uses: dorny/test-reporter@v1
+        with:
+          name: Test Results (${{ matrix.os }})
+          path: "test-results/**/*.trx"
+          reporter: dotnet-trx
+
+      # Calcola una versione (solo su Linux, evita duplicati dalla matrix)
+      - name: Calcola versione
+        id: version
+        if: ${{ runner.os == 'Linux' }}
+        shell: bash
+        run: |
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          else
+            VERSION="0.1.0-build.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Versione calcolata: $VERSION"
+
+      - name: Publish (solo su Linux)
+        if: ${{ runner.os == 'Linux' }}
+        run: >
+          dotnet publish ${{ env.PROJECT_PATH }}
+          --no-build --configuration Release
+          --output ${{ env.PUBLISH_OUTPUT }}
+
+      - name: Upload artifact (solo su Linux)
+        if: ${{ runner.os == 'Linux' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotnet-publish
+          path: ${{ env.PUBLISH_OUTPUT }}
+          retention-days: 7
+
+  # =========================================================================
+  # JOB 2 — QUALITA' DEL CODICE (formattazione)
+  # =========================================================================
+  code-quality:
+    name: Qualita' codice
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Verifica formattazione
+        run: dotnet format ${{ env.PROJECT_PATH }} --verify-no-changes --verbosity diagnostic
+        continue-on-error: true   # demo: segnala ma non blocca la pipeline
+
+  # =========================================================================
+  # JOB 3 — SCANSIONE SICUREZZA (pacchetti vulnerabili)
+  # =========================================================================
+  security:
+    name: Security scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+      - name: Cerca pacchetti vulnerabili
+        run: dotnet list ${{ env.PROJECT_PATH }} package --vulnerable --include-transitive
+
+  # =========================================================================
+  # JOB 4 — TAG REPOSITORY (solo su push del branch main)
+  #   needs: aspetta che build sia OK e riusa la versione calcolata
+  # =========================================================================
+  tag:
+    name: Tag repository
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Crea e pusha il tag
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          TAG="v${VERSION}"
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG gia' esistente, salto."
+          else
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+            echo "Tag $TAG creato."
+          fi
+
+  # =========================================================================
+  # JOB 5 — DEPLOY (con environment + approvazione manuale)
+  #   L'environment "staging/production" puo' richiedere approvazione
+  #   configurata in Settings > Environments del repo.
+  # =========================================================================
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    needs: [build, code-quality, security]
+    if: ${{ inputs.deploy-env != 'none' && inputs.deploy-env != '' }}
+    environment:
+      name: ${{ inputs.deploy-env }}
+      url: https://app-${{ inputs.deploy-env }}.example.com
+    steps:
+      - name: Scarica artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dotnet-publish
+          path: ./publish
+
+      - name: Deploy (placeholder)
+        env:
+          DEPLOY_TOKEN: ${{ secrets.DEPLOY_TOKEN }}   # esempio uso secret
+        run: |
+          echo "Deploy versione ${{ needs.build.outputs.version }} su '${{ inputs.deploy-env }}'"
+          echo "Qui andrebbe il comando reale (az webapp deploy, kubectl, scp, ...)"
+          ls -R ./publish
+
+  # =========================================================================
+  # JOB 6 — RIEPILOGO nella UI di GitHub (Job Summary)
+  #   always(): gira sempre, anche se qualcosa prima e' fallito
+  # =========================================================================
+  summary:
+    name: Riepilogo pipeline
+    runs-on: ubuntu-latest
+    needs: [build, code-quality, security]
+    if: ${{ always() }}
+    steps:
+      - name: Scrivi riepilogo
+        run: |
+          {
+            echo "## Riepilogo Pipeline"
+            echo ""
+            echo "| Fase | Esito |"
+            echo "|------|-------|"
+            echo "| Build & Test | ${{ needs.build.result }} |"
+            echo "| Qualita' codice | ${{ needs.code-quality.result }} |"
+            echo "| Security | ${{ needs.security.result }} |"
+            echo ""
+            echo "- Versione: \`${{ needs.build.outputs.version }}\`"
+            echo "- Commit: \`${{ github.sha }}\`"
+            echo "- Trigger: \`${{ github.event_name }}\`"
+          } >> "$GITHUB_STEP_SUMMARY"
+ 
