@@ -45,12 +45,16 @@ function Log {
 }
 
 function Exec {
-    param ([string] $Cmd)
+    param (
+        [string] $FilePath,
+        [string[]] $Arguments = @()
+    )
 
-    Log "Executing: '$Cmd'"
-    Invoke-Expression $Cmd
+    $cmdDisplay = @($FilePath) + $Arguments
+    Log "Executing: '$($cmdDisplay -join " ")'"
+    & $FilePath @Arguments
     if ($LASTEXITCODE -ne 0) {
-        throw "Failed: '$Cmd'"
+        throw "Failed: '$($cmdDisplay -join " ")'"
     }
 }
 
@@ -150,11 +154,15 @@ Try {
             $testFilter = "$CustomTestFilter&($testFilter)"
         }
 
-        $testFilter = "--filter '$testFilter'"
     }
 
     Write-Host "`nRunning tests with $testFilter`n"
-    Exec "$DotnetInstallDir/dotnet test $testFilter --logger:trx"
+    $dotnetTestArgs = @("test")
+    if ($testFilter) {
+        $dotnetTestArgs += @("--filter", $testFilter)
+    }
+    $dotnetTestArgs += "--logger:trx"
+    Exec -FilePath "$DotnetInstallDir/dotnet" -Arguments $dotnetTestArgs
 }
 Finally {
     Pop-Location

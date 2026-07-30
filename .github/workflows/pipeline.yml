@@ -9,9 +9,8 @@ on:
       - 'README*'
   workflow_dispatch:
 permissions:
-  contents: write
+  contents: read
   actions: read
-  issues: write
 jobs:
   build:
     name: .NET Build & Test
@@ -24,6 +23,10 @@ jobs:
     name: Trigger Failure Handler
     needs: build
     if: failure()
+    permissions:
+      contents: read
+      actions: read
+      issues: write
     uses: org-test-reply-1/platform-ai-workflows/.github/workflows/ai-failure-handler.yml@main
     with:
       target-repo: ${{ github.repository }}
